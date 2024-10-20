@@ -1,0 +1,23 @@
+{
+  "name": "monorepo",
+  "private": true,
+  "workspaces": [
+    "proxy",
+    "exercise"
+  ],
+  "scripts": {
+    "start:proxy": "yarn workspace proxy dev",
+    "start:exercise": "yarn workspace exercise dev",
+    "start": "concurrently \"yarn run start:proxy\" \"yarn run start:exercise\""
+  },
+  "dependencies": {
+    "concurrently": "^9.0.1",
+    "cookie-parser": "^1.4.7",
+    "jwt-decode": "^4.0.0"
+  },
+  "packageManager": "yarn@4.5.0",
+  "devDependencies": {
+    "@types/cookie-parser": "^1.4.7",
+    "tsconfig-paths": "^4.2.0"
+  }
+}

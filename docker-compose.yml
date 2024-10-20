@@ -1,0 +1,65 @@
+version: '3.8'
+services:
+  # Proxy Service (microservice 1)
+  proxy_sample:
+    image: proxy-compose-image
+    container_name: proxy_compose
+    build:
+      context: ./proxy  # Proxy folder in your monorepo
+      dockerfile: dockerfile.dev
+    restart: always
+    env_file: ./proxy/src/configs/.env
+    environment:
+      - DOCKER_ENV=true
+      - SERVICE_ROUTE=http://backend_sample:4000
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./proxy/src:/app/src # Hot reloading for proxy changes
+    command: "nodemon --legacy-watch --ext ts,json --exec ts-node /app/src/server.ts"
+    depends_on:
+      - backend_sample  # Depends on backend service being available
+    networks:
+      - app-network
+
+  # Backend (auth) Service (microservice 2)
+  backend_sample:
+    image: backend_sample
+    container_name: backend_sample_container
+    build:
+      context: ./exercise  # Auth-service folder in your monorepo
+      dockerfile: dockerfile.dev
+    restart: always
+    ports:
+      - "4000:4000"
+    env_file: ./exercise/withSwagger/configs/.env
+    environment:
+      - DOCKER_ENV=true
+      - MONGODB_URL=mongodb://leakna:leakna1234@mongo_db:27017/forDocker?authSource=admin
+    volumes:
+      - ./exercise/withSwagger:/app/withSwagger # Hot reloading for auth-service changes
+    command: "sh -c nodemon --legacy-watch --ext ts,json --exec ts-node /app/withSwagger/server.ts"
+    networks:
+      - app-network
+
+  # MongoDB Database
+  mongo_db:
+    image: mongo:latest
+    container_name: mongo_db
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=leakna
+      - MONGO_INITDB_ROOT_PASSWORD=leakna1234
+    volumes:
+      - mongo_data:/data/db  # Persist MongoDB data in a Docker volume
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge  # Shared network between services
+
+volumes:
+  mongo_data:

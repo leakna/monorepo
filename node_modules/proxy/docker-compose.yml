@@ -1,0 +1,27 @@
+version: '3.8'
+services:
+   proxy_sample:
+    image: proxy-compose-image
+    container_name: proxy_compose
+    build:
+      context: .
+      dockerfile: dockerfile.dev
+    restart: always
+    env_file: ./src/configs/.env
+    environment:
+      - DOCKER_ENV=true
+      - SERVICE_ROUTE=http://backend_sample:4000
+    ports:
+      - 7000:3000
+    volumes:
+      - ./src:/app/src # HOT RELOADING, ANY CHANGE IN SRC FOLDER OUR APP WILL RESTART
+
+    command: "nodemon --legacy-watch --ext ts,json --exec ts-node /app/src/server.ts"
+    depends_on:
+      - backend_sample
+    networks:
+      - my-network 
+networks:
+  my-network:
+    driver: bridge  # Custom network definition
+          
